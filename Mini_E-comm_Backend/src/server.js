@@ -1,8 +1,9 @@
 import app from "./app/app.js";
+import config from "./config/config.js";
 import { connectToDB } from "./config/db.js";
 
 await connectToDB();
 
-app.listen(3000, () => {
-  console.log("Server is Running on port 3000");
+app.listen(config.PORT, () => {
+  console.log(`Server is Running on port http://localhost:${config.PORT}`);
 });
