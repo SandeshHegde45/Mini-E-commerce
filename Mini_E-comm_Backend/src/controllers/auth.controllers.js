@@ -2,6 +2,13 @@ import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { createAccessToken, createRefreshToken } from "../utils/auth.utils.js";
 
+/**
+ * @description Register an user and save the data from req.body
+ * @param req.body Object
+ * @param req.body.email String
+ * @param req.body.name String
+ * @param req.body.password String
+ */
 export async function register(req, res) {
   const { name, email, password } = req.body;
 
@@ -49,7 +56,6 @@ export async function register(req, res) {
         name: user.name,
         email: user.email,
       },
-      accessToken,
     },
   });
 }
