@@ -104,42 +104,46 @@ export async function login(req, res) {
 
 export async function refresh(req, res) {
   const refreshToken = req.cookies.refreshToken;
+
   if (!refreshToken) {
     return res.status(401).json({
       message: "Refresh token required.",
     });
   }
+
   try {
     const decoded = readRefreshToken(refreshToken);
     const { userId, role } = decoded;
     const user = await userModel.findById(userId);
-    if (refreshToken != user.refreshToken) {
+
+    if (!user) {
+      return res.status(401).json({
+        message: "User not found",
+      });
+    }
+
+    if (refreshToken !== user.refreshToken) {
       await userModel.findByIdAndUpdate(user._id, {
         refreshToken: null,
-        isAccountFreeze: true,
       });
+
       return res.status(401).json({
         message: "Refresh token mismatch",
       });
     }
-    const accessToken = createAccessToken({
-      userId,
-      role,
-    });
-    const newRefreshToken = createRefreshToken({
-      userId,
-      role,
-    });
+
+    const accessToken = createAccessToken({ userId, role });
+    const newRefreshToken = createRefreshToken({ userId, role });
 
     await userModel.findByIdAndUpdate(user._id, {
       refreshToken: newRefreshToken,
     });
 
-    res.cookie("refreshToken", refreshToken, {
+    res.cookie("refreshToken", newRefreshToken, {
       httpOnly: true,
     });
 
-    res.status(200).json({
+    return res.status(200).json({
       message: "Tokens Rotated successfully",
       data: {
         user: {
