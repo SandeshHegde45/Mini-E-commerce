@@ -1,21 +1,34 @@
 import { readAccessToken } from "../utils/auth.utils.js";
 
 export function authenticate(req, res, next) {
-  const accessToken = req.headers.authorization?.split(" ")[1];
+  const authHeader = req.headers.authorization;
+  const accessToken = authHeader?.startsWith("Bearer ")
+    ? authHeader.split(" ")[1]
+    : null;
 
   if (!accessToken) {
-    return res.status(400).json({
-      message: "Access token is not found"
-    })
+    return res.status(401).json({
+      message: "Access token is not found",
+    });
   }
 
   try {
     const decoded = readAccessToken(accessToken);
     req.user = decoded;
-    next();
+    return next();
   } catch (error) {
-    res.status(401).json({
-      message: "Invalid access token"
-    })
+    return res.status(401).json({
+      message: "Invalid access token",
+    });
   }
+}
+
+export function authenticateSeller(req, res, next) {
+  if (req.user?.role !== "seller") {
+    return res.status(403).json({
+      message: "Seller access is required",
+    });
+  }
+
+  next();
 }
