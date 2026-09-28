@@ -1,6 +1,34 @@
 import cartModel from "../models/cart.model.js";
 import productModel from "../models/product.model.js";
 
+// Shape a populated cart document into the response the UI needs.
+function buildCartData(cart) {
+  let totalItems = 0;
+  let totalAmount = 0;
+
+  const items = cart.items.map((item) => {
+    const product = item.product;
+    const available = Boolean(
+      product?.published && product.stock >= item.quantity,
+    );
+    const subtotal = product ? product.price.amount * item.quantity : 0;
+
+    totalItems += item.quantity;
+    totalAmount += subtotal;
+
+    return {
+      product,
+      quantity: item.quantity,
+      subtotal,
+      available,
+    };
+  });
+
+  return { id: cart._id, items, totalItems, totalAmount };
+}
+
+const emptyCartData = { items: [], totalItems: 0, totalAmount: 0 };
+
 export async function addToCart(req, res) {
   try {
     const { productId } = req.body;
@@ -78,50 +106,128 @@ export async function getCart(req, res) {
     if (!cart) {
       return res.status(200).json({
         message: "Cart fetched successfully",
-        data: {
-          cart: {
-            items: [],
-            totalItems: 0,
-            totalAmount: 0,
-          },
-        },
+        data: { cart: emptyCartData },
       });
     }
 
-    let totalItems = 0;
-    let totalAmount = 0;
-    const items = cart.items.map((item) => {
-      const product = item.product;
-      const available = Boolean(
-        product?.published && product.stock >= item.quantity,
-      );
-      const subtotal = product ? product.price.amount * item.quantity : 0;
-
-      totalItems += item.quantity;
-      totalAmount += subtotal;
-
-      return {
-        product,
-        quantity: item.quantity,
-        subtotal,
-        available,
-      };
-    });
-
     return res.status(200).json({
       message: "Cart fetched successfully",
-      data: {
-        cart: {
-          id: cart._id,
-          items,
-          totalItems,
-          totalAmount,
-        },
-      },
+      data: { cart: buildCartData(cart) },
     });
   } catch (error) {
     return res.status(500).json({
       message: "Unable to fetch cart",
+      error: error.message,
+    });
+  }
+}
+
+// PATCH /api/cart  { productId, quantity } — sets the quantity of an item already in the cart.
+export async function updateCartItem(req, res) {
+  try {
+    const { productId } = req.body;
+    const quantity = Number(req.body.quantity);
+
+    const cart = await cartModel.findOne({ user: req.user.userId });
+    const item = cart?.items.find(
+      (cartItem) => cartItem.product.toString() === productId,
+    );
+
+    if (!item) {
+      return res.status(404).json({
+        message: "Item not found in cart",
+      });
+    }
+
+    const product = await productModel.findOne({
+      _id: productId,
+      published: true,
+    });
+
+    if (!product) {
+      return res.status(404).json({
+        message: "Published product not found",
+      });
+    }
+
+    if (quantity > product.stock) {
+      return res.status(409).json({
+        message: `Only ${product.stock} item(s) available in stock`,
+        availableStock: product.stock,
+      });
+    }
+
+    item.quantity = quantity;
+    await cart.save();
+
+    const populatedCart = await cartModel
+      .findById(cart._id)
+      .populate("items.product");
+
+    return res.status(200).json({
+      message: "Cart item updated successfully",
+      data: { cart: buildCartData(populatedCart) },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Unable to update cart item",
+      error: error.message,
+    });
+  }
+}
+
+// DELETE /api/cart/:productId — removes one item from the cart.
+export async function removeCartItem(req, res) {
+  try {
+    const { productId } = req.params;
+
+    const cart = await cartModel.findOne({ user: req.user.userId });
+    const hasItem = cart?.items.some(
+      (cartItem) => cartItem.product.toString() === productId,
+    );
+
+    if (!hasItem) {
+      return res.status(404).json({
+        message: "Item not found in cart",
+      });
+    }
+
+    cart.items = cart.items.filter(
+      (cartItem) => cartItem.product.toString() !== productId,
+    );
+    await cart.save();
+
+    const populatedCart = await cartModel
+      .findById(cart._id)
+      .populate("items.product");
+
+    return res.status(200).json({
+      message: "Item removed from cart successfully",
+      data: { cart: buildCartData(populatedCart) },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Unable to remove item from cart",
+      error: error.message,
+    });
+  }
+}
+
+// DELETE /api/cart — empties the cart.
+export async function clearCart(req, res) {
+  try {
+    await cartModel.findOneAndUpdate(
+      { user: req.user.userId },
+      { $set: { items: [] } },
+    );
+
+    return res.status(200).json({
+      message: "Cart cleared successfully",
+      data: { cart: emptyCartData },
+    });
+  } catch (error) {
+    return res.status(500).json({
+      message: "Unable to clear cart",
       error: error.message,
     });
   }
