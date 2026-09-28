@@ -1,5 +1,5 @@
 import { Link } from "react-router";
-import { AlertTriangle, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
+import { AlertTriangle, CreditCard, Minus, Plus, ShoppingBag, Trash2, X } from "lucide-react";
 
 import {
   useClearCartMutation,
@@ -51,74 +51,74 @@ function CartItem({ item }) {
 
   return (
     <li>
-    <Card className="flex-row gap-4 p-3 sm:p-4">
-      <Link to={`/products/${product._id}`} className="shrink-0">
-        <img
-          src={product.image?.[0]}
-          alt={product.title}
-          className="size-20 rounded-lg object-cover sm:size-24"
-        />
-      </Link>
-      <div className="flex min-w-0 flex-1 flex-col gap-2">
-        <div className="flex items-start justify-between gap-3">
-          <Link to={`/products/${product._id}`} className="line-clamp-2 font-medium hover:underline">
-            {product.title}
-          </Link>
-          <p data-tabular className="shrink-0 font-semibold">
-            {formatPrice(subtotal, product.price.currency)}
-          </p>
-        </div>
-        <p data-tabular className="text-sm text-muted-foreground">
-          {formatPrice(product.price.amount, product.price.currency)} each
-        </p>
-        <div className="mt-auto flex flex-wrap items-center gap-2">
-          <div className="flex items-center gap-1" aria-label={`Quantity for ${product.title}`}>
-            <TooltipHint content="Decrease quantity">
-              <LoadingButton
-                variant="outline"
-                size="icon-sm"
-                aria-label={`Decrease ${product.title}`}
-                onClick={() => changeQuantity(quantity - 1)}
-                loading={isUpdating}
-                disabled={isUpdating || isRemoving || quantity <= 1}
-              >
-                {!isUpdating && <Minus />}
-              </LoadingButton>
-            </TooltipHint>
-            <span data-tabular className="min-w-8 text-center text-sm font-medium">{quantity}</span>
-            <TooltipHint content="Increase quantity">
-              <LoadingButton
-                variant="outline"
-                size="icon-sm"
-                aria-label={`Increase ${product.title}`}
-                onClick={() => changeQuantity(quantity + 1)}
-                loading={isUpdating}
-                disabled={isUpdating || isRemoving || !available}
-              >
-                {!isUpdating && <Plus />}
-              </LoadingButton>
-            </TooltipHint>
+      <Card className="flex-row gap-4 p-3 sm:p-4">
+        <Link to={`/products/${product._id}`} className="shrink-0">
+          <img
+            src={product.image?.[0]}
+            alt={product.title}
+            className="size-20 rounded-lg object-cover sm:size-24"
+          />
+        </Link>
+        <div className="flex min-w-0 flex-1 flex-col gap-2">
+          <div className="flex items-start justify-between gap-3">
+            <Link to={`/products/${product._id}`} className="line-clamp-2 font-medium hover:underline">
+              {product.title}
+            </Link>
+            <p data-tabular className="shrink-0 font-semibold">
+              {formatPrice(subtotal, product.price.currency)}
+            </p>
           </div>
-          <TooltipHint content="Remove item">
-            <LoadingButton
-              variant="ghost"
-              size="icon-sm"
-              aria-label={`Remove ${product.title}`}
-              onClick={removeItem}
-              loading={isRemoving}
-              disabled={isUpdating}
-            >
-              {!isRemoving && <Trash2 />}
-            </LoadingButton>
-          </TooltipHint>
-          {!available && (
-            <Badge className="bg-warning/15 text-warning">
-              <AlertTriangle className="size-3" /> Not enough stock
-            </Badge>
-          )}
+          <p data-tabular className="text-sm text-muted-foreground">
+            {formatPrice(product.price.amount, product.price.currency)} each
+          </p>
+          <div className="mt-auto flex flex-wrap items-center gap-2">
+            <div className="flex items-center gap-1" aria-label={`Quantity for ${product.title}`}>
+              <TooltipHint content="Decrease quantity">
+                <LoadingButton
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={`Decrease ${product.title}`}
+                  onClick={() => changeQuantity(quantity - 1)}
+                  loading={isUpdating}
+                  disabled={isUpdating || isRemoving || quantity <= 1}
+                >
+                  {!isUpdating && <Minus />}
+                </LoadingButton>
+              </TooltipHint>
+              <span data-tabular className="min-w-8 text-center text-sm font-medium">{quantity}</span>
+              <TooltipHint content="Increase quantity">
+                <LoadingButton
+                  variant="outline"
+                  size="icon-sm"
+                  aria-label={`Increase ${product.title}`}
+                  onClick={() => changeQuantity(quantity + 1)}
+                  loading={isUpdating}
+                  disabled={isUpdating || isRemoving || !available}
+                >
+                  {!isUpdating && <Plus />}
+                </LoadingButton>
+              </TooltipHint>
+            </div>
+            <TooltipHint content="Remove item">
+              <LoadingButton
+                variant="ghost"
+                size="icon-sm"
+                aria-label={`Remove ${product.title}`}
+                onClick={removeItem}
+                loading={isRemoving}
+                disabled={isUpdating}
+              >
+                {!isRemoving && <Trash2 />}
+              </LoadingButton>
+            </TooltipHint>
+            {!available && (
+              <Badge className="bg-warning/15 text-warning">
+                <AlertTriangle className="size-3" /> Not enough stock
+              </Badge>
+            )}
+          </div>
         </div>
-      </div>
-    </Card>
+      </Card>
     </li>
   );
 }
@@ -129,6 +129,7 @@ export default function Cart() {
   const cart = data?.data?.cart;
   const items = cart?.items ?? [];
   const currency = items.find((i) => i.product)?.product.price.currency ?? "INR";
+  const hasUnavailableItems = items.some((item) => !item.available);
 
   async function handleClearCart() {
     try {
@@ -172,39 +173,45 @@ export default function Cart() {
           </ul>
 
           <aside className="lg:sticky lg:top-24">
-          <Card className="p-5">
-            <div className="flex items-center justify-between gap-3">
-              <h2 className="font-semibold">Order summary</h2>
-              <TooltipHint content="Clear cart">
-                <LoadingButton
-                  variant="ghost"
-                  size="icon-sm"
-                  aria-label="Clear cart"
-                  onClick={handleClearCart}
-                  loading={isClearing}
-                >
-                  {!isClearing && <X />}
-                </LoadingButton>
+            <Card className="p-5">
+              <div className="flex items-center justify-between gap-3">
+                <h2 className="font-semibold">Order summary</h2>
+                <TooltipHint content="Clear cart">
+                  <LoadingButton
+                    variant="ghost"
+                    size="icon-sm"
+                    aria-label="Clear cart"
+                    onClick={handleClearCart}
+                    loading={isClearing}
+                  >
+                    {!isClearing && <X />}
+                  </LoadingButton>
+                </TooltipHint>
+              </div>
+              <dl className="mt-4 space-y-2 text-sm">
+                <div className="flex justify-between">
+                  <dt className="text-muted-foreground">Items</dt>
+                  <dd data-tabular>{cart.totalItems}</dd>
+                </div>
+                <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
+                  <dt>Total</dt>
+                  <dd data-tabular>{formatPrice(cart.totalAmount, currency)}</dd>
+                </div>
+              </dl>
+              <TooltipHint content={hasUnavailableItems ? "Remove unavailable items first" : "Continue to checkout"}>
+                <span className="mt-5 block">
+                  {hasUnavailableItems ? (
+                    <Button size="lg" className="w-full" disabled>
+                      <CreditCard /> Checkout
+                    </Button>
+                  ) : (
+                    <Link to="/checkout" className={buttonVariants({ size: "lg", className: "w-full" })}>
+                      <CreditCard /> Checkout
+                    </Link>
+                  )}
+                </span>
               </TooltipHint>
-            </div>
-            <dl className="mt-4 space-y-2 text-sm">
-              <div className="flex justify-between">
-                <dt className="text-muted-foreground">Items</dt>
-                <dd data-tabular>{cart.totalItems}</dd>
-              </div>
-              <div className="flex justify-between border-t border-border pt-3 text-base font-semibold">
-                <dt>Total</dt>
-                <dd data-tabular>{formatPrice(cart.totalAmount, currency)}</dd>
-              </div>
-            </dl>
-            <TooltipHint content="Checkout isn't available yet">
-              <span className="mt-5 block">
-                <Button size="lg" className="w-full" disabled>
-                  Checkout
-                </Button>
-              </span>
-            </TooltipHint>
-          </Card>
+            </Card>
           </aside>
         </div>
       )}

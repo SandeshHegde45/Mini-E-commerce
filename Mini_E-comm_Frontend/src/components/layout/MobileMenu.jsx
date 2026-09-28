@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { LogIn, LogOut, Menu, ShoppingBag, Store, UserPlus } from "lucide-react";
+import { CreditCard, LogIn, LogOut, Menu, ShoppingBag, Store, UserPlus } from "lucide-react";
 
 import {
   clearCredentials,
@@ -83,6 +83,11 @@ export function MobileMenu() {
           {isAuthenticated && (
             <SheetClose nativeButton={false} render={<Link to="/cart" />} className={linkClass}>
               <ShoppingBag /> My cart
+            </SheetClose>
+          )}
+          {isAuthenticated && (
+            <SheetClose nativeButton={false} render={<Link to="/checkout" />} className={linkClass}>
+              <CreditCard /> Checkout
             </SheetClose>
           )}
           {isSeller && (

@@ -141,12 +141,10 @@ export async function updateProduct(req, res) {
       { new: true, runValidators: true },
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Product updated successfully",
-        data: { product: updatedProduct },
-      });
+    return res.status(200).json({
+      message: "Product updated successfully",
+      data: { product: updatedProduct },
+    });
   } catch (error) {
     return res
       .status(500)

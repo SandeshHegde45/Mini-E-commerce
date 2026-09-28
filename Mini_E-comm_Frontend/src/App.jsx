@@ -12,6 +12,8 @@ import ProductDetail from "@/pages/ProductDetail";
 import Login from "@/pages/Login";
 import Register from "@/pages/Register";
 import Cart from "@/pages/Cart";
+import Checkout from "@/pages/Checkout";
+import OrderSuccess from "@/pages/OrderSuccess";
 import SellerDashboard from "@/pages/SellerDashboard";
 import NotFound from "@/pages/NotFound";
 
@@ -44,6 +46,8 @@ export default function App() {
 
         <Route element={<ProtectedRoute />}>
           <Route path="cart" element={<Cart />} />
+          <Route path="checkout" element={<Checkout />} />
+          <Route path="order-success" element={<OrderSuccess />} />
         </Route>
 
         <Route element={<SellerRoute />}>
