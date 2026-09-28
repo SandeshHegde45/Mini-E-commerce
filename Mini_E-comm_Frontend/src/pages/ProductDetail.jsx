@@ -1,11 +1,12 @@
-import { useState } from "react";
+import { useEffect, useRef, useState } from "react";
 import { Link, useLocation, useNavigate, useParams } from "react-router";
 import { useSelector } from "react-redux";
-import { ArrowLeft, Minus, PackageX, Plus, ShoppingBag } from "lucide-react";
+import { ArrowLeft, Check, Minus, PackageX, Plus, ShoppingBag } from "lucide-react";
 
 import { selectIsAuthenticated } from "@/features/auth/authSlice";
 import { useGetProductByIdQuery } from "@/api/productApi";
 import { useAddToCartMutation } from "@/api/cartApi";
+import { useCartPreview } from "@/components/CartPreview";
 import { StockBadge } from "@/components/ProductCard";
 import { EmptyState } from "@/components/EmptyState";
 import { Button, buttonVariants } from "@/components/ui/button";
@@ -22,7 +23,10 @@ export default function ProductDetail() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const { data, isLoading, isError } = useGetProductByIdQuery(id);
   const [addToCart, { isLoading: isAdding }] = useAddToCartMutation();
+  const { showCartPreview } = useCartPreview();
   const [quantity, setQuantity] = useState(1);
+  const [added, setAdded] = useState(false);
+  const addedTimeout = useRef(null);
 
   const product = data?.data?.product;
 
@@ -34,11 +38,16 @@ export default function ProductDetail() {
     }
     try {
       await addToCart({ productId: product._id, quantity }).unwrap();
-      toast.success("Added to cart", `${quantity} × ${product.title}`);
+      setAdded(true);
+      clearTimeout(addedTimeout.current);
+      addedTimeout.current = setTimeout(() => setAdded(false), 5000);
+      showCartPreview();
     } catch (error) {
       toast.error("Couldn't add to cart", getApiErrorMessage(error));
     }
   }
+
+  useEffect(() => () => clearTimeout(addedTimeout.current), []);
 
   if (isLoading) {
     return (
@@ -125,8 +134,8 @@ export default function ProductDetail() {
             </div>
 
             <LoadingButton size="lg" className="flex-1 sm:flex-none sm:px-10" onClick={handleAdd} loading={isAdding} disabled={soldOut}>
-              {!isAdding && <ShoppingBag />}
-              {soldOut ? "Sold out" : "Add to cart"}
+              {!isAdding && (added ? <Check /> : <ShoppingBag />)}
+              {soldOut ? "Sold out" : added ? "Added to cart" : "Add to cart"}
             </LoadingButton>
           </div>
         </div>

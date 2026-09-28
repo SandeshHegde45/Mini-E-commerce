@@ -1,9 +1,11 @@
 import { Link, useLocation, useNavigate } from "react-router";
+import { useEffect, useRef, useState } from "react";
 import { useSelector } from "react-redux";
-import { ShoppingBag } from "lucide-react";
+import { Check, ShoppingBag } from "lucide-react";
 
 import { selectIsAuthenticated } from "@/features/auth/authSlice";
 import { useAddToCartMutation } from "@/api/cartApi";
+import { useCartPreview } from "@/components/CartPreview";
 import { LoadingButton } from "@/components/LoadingButton";
 import { TooltipHint } from "@/components/TooltipHint";
 import { Badge } from "@/components/ui/badge";
@@ -19,10 +21,13 @@ export function StockBadge({ stock }) {
 }
 
 export function ProductCard({ product }) {
+  const [added, setAdded] = useState(false);
+  const addedTimeout = useRef(null);
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const navigate = useNavigate();
   const location = useLocation();
   const [addToCart, { isLoading }] = useAddToCartMutation();
+  const { showCartPreview } = useCartPreview();
   const soldOut = product.stock < 1;
 
   async function handleAdd() {
@@ -33,11 +38,16 @@ export function ProductCard({ product }) {
     }
     try {
       await addToCart({ productId: product._id, quantity: 1 }).unwrap();
-      toast.success("Added to cart", product.title);
+      setAdded(true);
+      clearTimeout(addedTimeout.current);
+      addedTimeout.current = setTimeout(() => setAdded(false), 5000);
+      showCartPreview();
     } catch (error) {
       toast.error("Couldn't add to cart", getApiErrorMessage(error));
     }
   }
+
+  useEffect(() => () => clearTimeout(addedTimeout.current), []);
 
   return (
     <Card className="group gap-0 py-0">
@@ -64,8 +74,8 @@ export function ProductCard({ product }) {
         </div>
         <TooltipHint content={soldOut ? "This item is sold out" : "Add one to your cart"}>
           <LoadingButton variant="secondary" size="lg" className="w-full" onClick={handleAdd} loading={isLoading} disabled={soldOut}>
-            {!isLoading && <ShoppingBag />}
-            Add to cart
+            {!isLoading && (added ? <Check /> : <ShoppingBag />)}
+            {added ? "Added to cart" : "Add to cart"}
           </LoadingButton>
         </TooltipHint>
       </CardContent>
