@@ -15,7 +15,7 @@ import { cn } from "@/lib/utils";
 function CartLink() {
   const isAuthenticated = useSelector(selectIsAuthenticated);
   const { data } = useGetCartQuery(undefined, { skip: !isAuthenticated });
-  const count = data?.data?.cart?.totalItems ?? 0;
+  const count = isAuthenticated ? data?.data?.cart?.totalItems ?? 0 : 0;
 
   return (
     <TooltipHint content="Your cart">
