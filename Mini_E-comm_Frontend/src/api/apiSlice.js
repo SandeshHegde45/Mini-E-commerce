@@ -1,7 +1,9 @@
 import { createApi, fetchBaseQuery } from "@reduxjs/toolkit/query/react";
 import { setCredentials, clearCredentials } from "@/features/auth/authSlice";
 
-const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000/api";
+const API_URL =
+  import.meta.env.VITE_API_URL ||
+  (import.meta.env.PROD ? "/api" : "http://localhost:3000/api");
 
 const rawBaseQuery = fetchBaseQuery({
   baseUrl: API_URL,
@@ -16,7 +18,11 @@ const rawBaseQuery = fetchBaseQuery({
 // Prevents parallel requests from all trying to refresh the token at once.
 let refreshPromise = null;
 
-const AUTH_FREE_URLS = new Set(["/auth/login", "/auth/register", "/auth/refresh-token"]);
+const AUTH_FREE_URLS = new Set([
+  "/auth/login",
+  "/auth/register",
+  "/auth/refresh-token",
+]);
 
 async function baseQueryWithReauth(args, api, extraOptions) {
   let result = await rawBaseQuery(args, api, extraOptions);
