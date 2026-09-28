@@ -6,23 +6,25 @@ function buildCartData(cart) {
   let totalItems = 0;
   let totalAmount = 0;
 
-  const items = cart.items.map((item) => {
-    const product = item.product;
-    const available = Boolean(
-      product?.published && product.stock >= item.quantity,
-    );
-    const subtotal = product ? product.price.amount * item.quantity : 0;
+  const items = cart.items
+    .filter((item) => item.product)
+    .map((item) => {
+      const product = item.product;
+      const available = Boolean(
+        product?.published && product.stock >= item.quantity,
+      );
+      const subtotal = product ? product.price.amount * item.quantity : 0;
 
-    totalItems += item.quantity;
-    totalAmount += subtotal;
+      totalItems += item.quantity;
+      totalAmount += subtotal;
 
-    return {
-      product,
-      quantity: item.quantity,
-      subtotal,
-      available,
-    };
-  });
+      return {
+        product,
+        quantity: item.quantity,
+        subtotal,
+        available,
+      };
+    });
 
   return { id: cart._id, items, totalItems, totalAmount };
 }

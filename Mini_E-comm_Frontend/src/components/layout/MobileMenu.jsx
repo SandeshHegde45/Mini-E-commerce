@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { Link, useNavigate } from "react-router";
 import { useDispatch, useSelector } from "react-redux";
-import { LogIn, LogOut, Menu, ShoppingBag, Store, UserPlus } from "lucide-react";
+import { CreditCard, LogIn, LogOut, Menu, ShoppingBag, Store, UserPlus } from "lucide-react";
 
 import {
   clearCredentials,
@@ -77,16 +77,21 @@ export function MobileMenu() {
             </div>
           )}
 
-          <SheetClose render={<Link to="/" />} className={linkClass}>
+          <SheetClose nativeButton={false} render={<Link to="/" />} className={linkClass}>
             Shop
           </SheetClose>
           {isAuthenticated && (
-            <SheetClose render={<Link to="/cart" />} className={linkClass}>
+            <SheetClose nativeButton={false} render={<Link to="/cart" />} className={linkClass}>
               <ShoppingBag /> My cart
             </SheetClose>
           )}
+          {isAuthenticated && (
+            <SheetClose nativeButton={false} render={<Link to="/checkout" />} className={linkClass}>
+              <CreditCard /> Checkout
+            </SheetClose>
+          )}
           {isSeller && (
-            <SheetClose render={<Link to="/seller" />} className={linkClass}>
+            <SheetClose nativeButton={false} render={<Link to="/seller" />} className={linkClass}>
               <Store /> Seller dashboard
             </SheetClose>
           )}
@@ -100,12 +105,13 @@ export function MobileMenu() {
           ) : (
             <div className="flex flex-col gap-2">
               <SheetClose
+                nativeButton={false}
                 render={<Link to="/login" />}
                 className={buttonVariants({ variant: "secondary", size: "lg" })}
               >
                 <LogIn /> Log in
               </SheetClose>
-              <SheetClose render={<Link to="/register" />} className={buttonVariants({ size: "lg" })}>
+              <SheetClose nativeButton={false} render={<Link to="/register" />} className={buttonVariants({ size: "lg" })}>
                 <UserPlus /> Create account
               </SheetClose>
             </div>

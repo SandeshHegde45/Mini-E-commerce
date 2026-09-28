@@ -1,4 +1,5 @@
 import productModel from "../models/product.model.js";
+import cartModel from "../models/cart.model.js";
 import { uploadFile } from "../services/storage.services.js";
 
 function parseBoolean(value) {
@@ -94,6 +95,11 @@ export async function getProductById(req, res) {
       return res.status(404).json({ message: "Product not found" });
     }
 
+    await cartModel.updateMany(
+      { "items.product": product._id },
+      { $pull: { items: { product: product._id } } },
+    );
+
     return res
       .status(200)
       .json({ message: "Product fetched successfully", data: { product } });
@@ -135,12 +141,10 @@ export async function updateProduct(req, res) {
       { new: true, runValidators: true },
     );
 
-    return res
-      .status(200)
-      .json({
-        message: "Product updated successfully",
-        data: { product: updatedProduct },
-      });
+    return res.status(200).json({
+      message: "Product updated successfully",
+      data: { product: updatedProduct },
+    });
   } catch (error) {
     return res
       .status(500)
