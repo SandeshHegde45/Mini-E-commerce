@@ -31,8 +31,11 @@ export default function App() {
   return (
     <Routes>
       <Route element={<RootLayout />}>
-        <Route index element={<Home />} />
         <Route path="products/:id" element={<ProductDetail />} />
+
+        <Route element={<ProtectedRoute redirectTo="/register" />}>
+          <Route index element={<Home />} />
+        </Route>
 
         <Route element={<GuestRoute />}>
           <Route path="login" element={<Login />} />

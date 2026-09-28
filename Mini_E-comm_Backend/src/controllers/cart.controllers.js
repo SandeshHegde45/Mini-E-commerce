@@ -6,7 +6,7 @@ function buildCartData(cart) {
   let totalItems = 0;
   let totalAmount = 0;
 
-  const items = cart.items.map((item) => {
+  const items = cart.items.filter((item) => item.product).map((item) => {
     const product = item.product;
     const available = Boolean(
       product?.published && product.stock >= item.quantity,

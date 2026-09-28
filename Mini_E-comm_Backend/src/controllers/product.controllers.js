@@ -1,4 +1,5 @@
 import productModel from "../models/product.model.js";
+import cartModel from "../models/cart.model.js";
 import { uploadFile } from "../services/storage.services.js";
 
 function parseBoolean(value) {
@@ -93,6 +94,11 @@ export async function getProductById(req, res) {
     if (!product) {
       return res.status(404).json({ message: "Product not found" });
     }
+
+    await cartModel.updateMany(
+      { "items.product": product._id },
+      { $pull: { items: { product: product._id } } },
+    );
 
     return res
       .status(200)

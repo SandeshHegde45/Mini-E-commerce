@@ -1,9 +1,7 @@
 import { Link, useNavigate } from "react-router";
 import { useForm } from "react-hook-form";
-import { useDispatch } from "react-redux";
 
-import { useLoginMutation, useRegisterMutation } from "@/api/authApi";
-import { setCredentials } from "@/features/auth/authSlice";
+import { useRegisterMutation } from "@/api/authApi";
 import { AuthLayout } from "@/components/AuthLayout";
 import { LoadingButton } from "@/components/LoadingButton";
 import { PasswordInput } from "@/components/PasswordInput";
@@ -13,10 +11,8 @@ import { toast } from "@/lib/toast";
 import { applyServerFieldErrors, getApiErrorMessage } from "@/utils/format";
 
 export default function Register() {
-  const dispatch = useDispatch();
   const navigate = useNavigate();
   const [registerUser, { isLoading: isRegistering }] = useRegisterMutation();
-  const [login, { isLoading: isLoggingIn }] = useLoginMutation();
   const {
     register,
     handleSubmit,
@@ -35,16 +31,8 @@ export default function Register() {
       return;
     }
 
-    // The register endpoint doesn't return an access token, so sign in right away.
-    try {
-      const res = await login({ email: values.email, password: values.password }).unwrap();
-      dispatch(setCredentials(res.data));
-      toast.success("Account created", `Welcome to Basket, ${res.data.user.name}.`);
-      navigate("/", { replace: true });
-    } catch {
-      toast.success("Account created", "Log in to get started.");
-      navigate("/login", { replace: true });
-    }
+    toast.success("Account created", "Log in to start shopping.");
+    navigate("/login", { replace: true });
   }
 
   return (
@@ -116,7 +104,7 @@ export default function Register() {
             />
             <FieldError errors={[errors.confirmPassword]} />
           </Field>
-          <LoadingButton type="submit" size="lg" className="w-full" loading={isRegistering || isLoggingIn}>
+          <LoadingButton type="submit" size="lg" className="w-full" loading={isRegistering}>
             Create account
           </LoadingButton>
         </FieldGroup>
