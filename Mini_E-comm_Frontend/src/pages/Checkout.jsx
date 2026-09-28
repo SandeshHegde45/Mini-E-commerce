@@ -3,7 +3,7 @@ import { Link, useNavigate } from "react-router";
 import { ArrowLeft, Check, CreditCard, LockKeyhole, MapPin } from "lucide-react";
 import { useSelector } from "react-redux";
 
-import { useClearCartMutation, useGetCartQuery } from "@/api/cartApi";
+import { useCheckoutCartMutation, useGetCartQuery } from "@/api/cartApi";
 import { selectCurrentUser } from "@/features/auth/authSlice";
 import { EmptyState } from "@/components/EmptyState";
 import { LoadingButton } from "@/components/LoadingButton";
@@ -34,7 +34,7 @@ export default function Checkout() {
   const user = useSelector(selectCurrentUser);
   const navigate = useNavigate();
   const { data, isLoading, isError, refetch } = useGetCartQuery();
-  const [clearCart, { isLoading: isPlacingOrder }] = useClearCartMutation();
+  const [checkoutCart, { isLoading: isPlacingOrder }] = useCheckoutCartMutation();
   const [details, setDetails] = useState({
     ...initialDetails,
     name: user?.name || "",
@@ -60,7 +60,7 @@ export default function Checkout() {
     }
 
     try {
-      await clearCart().unwrap();
+      await checkoutCart().unwrap();
       const orderId = createOrderId();
       toast.success("Order placed", `Your order ${orderId} has been confirmed.`);
       navigate("/order-success", {

@@ -234,3 +234,67 @@ export async function clearCart(req, res) {
     });
   }
 }
+
+export async function checkoutCart(req, res) {
+  const reservedItems = [];
+
+  try {
+    const cart = await cartModel
+      .findOne({ user: req.user.userId })
+      .populate("items.product");
+
+    if (!cart?.items.length) {
+      return res.status(400).json({ message: "Your cart is empty" });
+    }
+
+    for (const item of cart.items) {
+      const product = item.product;
+      if (!product) {
+        await releaseReservedStock(reservedItems);
+        return res
+          .status(409)
+          .json({ message: "A cart product is no longer available" });
+      }
+
+      const result = await productModel.updateOne(
+        {
+          _id: product._id,
+          published: true,
+          stock: { $gte: item.quantity },
+        },
+        { $inc: { stock: -item.quantity } },
+      );
+
+      if (result.modifiedCount !== 1) {
+        await releaseReservedStock(reservedItems);
+        return res.status(409).json({
+          message: `${product.title} no longer has enough stock`,
+        });
+      }
+
+      reservedItems.push({ productId: product._id, quantity: item.quantity });
+    }
+
+    await cartModel.updateOne({ _id: cart._id }, { $set: { items: [] } });
+
+    return res.status(200).json({
+      message: "Order placed successfully",
+      data: { productIds: reservedItems.map(({ productId }) => productId) },
+    });
+  } catch (error) {
+    await releaseReservedStock(reservedItems);
+    return res.status(500).json({
+      message: "Unable to place order",
+      error: error.message,
+    });
+  }
+}
+
+async function releaseReservedStock(items) {
+  await Promise.all(
+    items.map(({ productId, quantity }) =>
+      productModel.updateOne({ _id: productId }, { $inc: { stock: quantity } }),
+    ),
+  );
+  items.length = 0;
+}
