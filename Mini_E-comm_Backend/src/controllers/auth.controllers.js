@@ -1,6 +1,15 @@
 import userModel from "../models/user.model.js";
 import bcrypt from "bcryptjs";
 import { createAccessToken, createRefreshToken, readRefreshToken } from "../utils/auth.utils.js";
+import config from "../config/config.js";
+
+const refreshCookieOptions = {
+  httpOnly: true,
+  secure: config.NODE_ENV === "production",
+  sameSite: config.NODE_ENV === "production" ? "none" : "lax",
+  path: "/",
+};
+
 export async function register(req, res) {
   const { name, email, password, role } = req.body;
 
@@ -35,9 +44,7 @@ export async function register(req, res) {
     role: user.role,
   });
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-  });
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
   await userModel.findByIdAndUpdate(user._id, { refreshToken });
 
@@ -86,9 +93,7 @@ export async function login(req, res) {
     refreshToken,
   });
 
-  res.cookie("refreshToken", refreshToken, {
-    httpOnly: true,
-  });
+  res.cookie("refreshToken", refreshToken, refreshCookieOptions);
 
   res.status(200).json({
     message: "User logged in successfully",
@@ -140,9 +145,7 @@ export async function refresh(req, res) {
       refreshToken: newRefreshToken,
     });
 
-    res.cookie("refreshToken", newRefreshToken, {
-      httpOnly: true,
-    });
+    res.cookie("refreshToken", newRefreshToken, refreshCookieOptions);
 
     return res.status(200).json({
       message: "Tokens Rotated successfully",
@@ -183,7 +186,7 @@ export async function logout(req, res) {
     refreshToken: null,
   });
 
-  res.clearCookie("refreshToken");
+  res.clearCookie("refreshToken", refreshCookieOptions);
 
   return res.status(200).json({
     message: "Logout successful",
