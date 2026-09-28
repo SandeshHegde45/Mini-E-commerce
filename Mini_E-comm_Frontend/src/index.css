@@ -1,1 +1,197 @@
 @import "tailwindcss";
+@import "tw-animate-css";
+@import "shadcn/tailwind.css";
+@import "@fontsource-variable/geist";
+
+@custom-variant dark (&:where(.dark, .dark *));
+
+:root {
+  --radius: 0.65rem;
+
+  /* Light mode — paper, ink, amber & teal market palette */
+  --background: #f5f3ed;
+  --foreground: #171a16;
+
+  --card: #fffdf9;
+  --card-foreground: #171a16;
+
+  --popover: #fffdf9;
+  --popover-foreground: #171a16;
+
+  --primary: #b8641a;
+  --primary-foreground: #fff8ec;
+
+  --secondary: #eae6d9;
+  --secondary-foreground: #171a16;
+
+  --muted: #eae6d9;
+  --muted-foreground: #63685c;
+
+  --accent: #eae6d9;
+  --accent-foreground: #171a16;
+
+  --accent-teal: #2f6f5e;
+  --accent-teal-foreground: #f4faf7;
+
+  --destructive: #a3293a;
+  --destructive-foreground: #fff5f5;
+
+  --border: #ddd7c6;
+  --input: #ddd7c6;
+  --ring: #b8641a;
+
+  --success: #2f6f5e;
+  --warning: #b8641a;
+}
+
+.dark {
+  --background: #14150f;
+  --foreground: #f3f1e7;
+
+  --card: #1c1e15;
+  --card-foreground: #f3f1e7;
+
+  --popover: #1c1e15;
+  --popover-foreground: #f3f1e7;
+
+  --primary: #e2a63b;
+  --primary-foreground: #1c1400;
+
+  --secondary: #262819;
+  --secondary-foreground: #f3f1e7;
+
+  --muted: #24261a;
+  --muted-foreground: #a6a68f;
+
+  --accent: #262819;
+  --accent-foreground: #f3f1e7;
+
+  --accent-teal: #4fa189;
+  --accent-teal-foreground: #08211b;
+
+  --destructive: #e2697b;
+  --destructive-foreground: #2c0a0f;
+
+  --border: #2c2e20;
+  --input: #2c2e20;
+  --ring: #e2a63b;
+
+  --success: #4fa189;
+  --warning: #e2a63b;
+}
+
+@theme inline {
+  --font-sans: "Geist Variable", ui-sans-serif, system-ui, sans-serif;
+
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-card-foreground: var(--card-foreground);
+  --color-popover: var(--popover);
+  --color-popover-foreground: var(--popover-foreground);
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+  --color-accent-teal: var(--accent-teal);
+  --color-accent-teal-foreground: var(--accent-teal-foreground);
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+  --color-success: var(--success);
+  --color-warning: var(--warning);
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --radius-sm: calc(var(--radius) - 4px);
+  --radius-md: calc(var(--radius) - 2px);
+  --radius-lg: var(--radius);
+  --radius-xl: calc(var(--radius) + 4px);
+
+  --animate-fade-in: fade-in 0.25s ease-out;
+  --animate-slide-up: slide-up 0.3s cubic-bezier(0.16, 1, 0.3, 1);
+
+  @keyframes fade-in {
+    from {
+      opacity: 0;
+    }
+    to {
+      opacity: 1;
+    }
+  }
+  @keyframes slide-up {
+    from {
+      opacity: 0;
+      transform: translateY(6px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+}
+
+@layer base {
+  * {
+    border-color: var(--color-border);
+  }
+
+  html {
+    color-scheme: light;
+    scroll-padding-top: env(safe-area-inset-top, 0px);
+  }
+  html.dark {
+    color-scheme: dark;
+  }
+
+  body {
+    background-color: var(--color-background);
+    color: var(--color-foreground);
+    font-family: var(--font-sans);
+    -webkit-font-smoothing: antialiased;
+    text-rendering: optimizeLegibility;
+  }
+
+  ::selection {
+    background-color: var(--color-primary);
+    color: var(--color-primary-foreground);
+  }
+
+  :focus-visible {
+    outline: 2px solid var(--color-ring);
+    outline-offset: 2px;
+    border-radius: 2px;
+  }
+
+  ::-webkit-scrollbar {
+    width: 10px;
+    height: 10px;
+  }
+  ::-webkit-scrollbar-track {
+    background: transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    background-color: var(--color-border);
+    border-radius: 999px;
+    border: 2px solid var(--color-background);
+  }
+
+  [data-tabular] {
+    font-variant-numeric: tabular-nums;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.001ms !important;
+    scroll-behavior: auto !important;
+  }
+}
